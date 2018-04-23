@@ -1,3 +1,4 @@
+/*
 Copyright (c) 2018, MIPI Alliance, Inc. 
 All rights reserved.
 
@@ -28,4 +29,50 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
+/*
+ * Contributors:
+ * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ */
+
+ /* Compiler dependent code */
+
+#include "mipi_syst.h"
+
+#if defined(_WIN32) /* MSVC Compiler section */
+
+#include <intrin.h>
+#pragma intrinsic(_ReturnAddress)
+
+#if defined(MIPI_SYST_PCFG_ENABLE_LOCATION_ADDRESS)
+/**
+ * Return the instruction pointer address of the instruction
+ * that follows this function. It is used to compute
+ * location information for SyS-T instrumentation calls.
+ * These are the calls that end with the _LOCADDR suffix.
+ */
+MIPI_SYST_EXPORT void *MIPI_SYST_CALLCONV mipi_syst_return_addr()
+{
+	return _ReturnAddress();
+}
+#endif /* defined(MIPI_SYST_PCFG_ENABLE_LOCATION_ADDRESS) */
+
+#elif defined(__GNUC__) /* GNU-C Compiler section */
+
+#if defined(MIPI_SYST_PCFG_ENABLE_LOCATION_ADDRESS)
+/**
+ * Return the instruction pointer address of the instruction
+ * that follows this function. It is used to compute
+ * location information for SyS-T instrumentation calls.
+ * These are the calls that end with the _LOCADDR suffix.
+ */
+MIPI_SYST_EXPORT void *MIPI_SYST_CALLCONV mipi_syst_return_addr()
+{
+	return __builtin_return_address(0);
+}
+#endif
+
+#else
+#error unknown compiler, copy and adapt one of the sections above
+#endif
