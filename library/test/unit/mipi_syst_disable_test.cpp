@@ -1,3 +1,4 @@
+/*
 Copyright (c) 2018, MIPI Alliance, Inc. 
 All rights reserved.
 
@@ -28,4 +29,33 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
+/*
+ * Contributors:
+ * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ */
+
+#define MIPI_SYST_DISABLE_ALL
+
+// Need to rename MipiSysTFixtureBase here as we otherwise link in versions
+// of this class with different SYS-T defines. It then becomes unpredictable
+// which one is used during linking.
+//
+#define MipiSysTFixtureBase MipiSysTFixtureBaseDisabled
+
+#include "mipi_syst_gtest.h"
+
+TEST_F(MipiSysTFixtureBase, syst_disabled_test)
+{
+	struct mipi_syst_handle* ph;
+
+	ph = MIPI_SYST_ALLOC_HANDLE((void*)0xC0FFEBABE );
+	EXPECT_EQ((struct mipi_syst_handle*)0, MIPI_SYST_ALLOC_HANDLE(xx));
+
+	MIPI_SYST_SET_HANDLE_MODULE_UNIT(ph, 1,2);
+
+	MIPI_SYST_DEBUG(a, xx, yy , zz);
+
+	MIPI_SYST_DELETE_HANDLE(ph);
+}

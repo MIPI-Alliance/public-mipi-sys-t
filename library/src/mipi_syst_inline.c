@@ -1,3 +1,4 @@
+/*
 Copyright (c) 2018, MIPI Alliance, Inc. 
 All rights reserved.
 
@@ -28,4 +29,20 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
+/*
+ * Contributors:
+ * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ */
+
+#include "mipi_syst.h"
+
+/* Include inline function in this cpp file if functions inline
+ * support is disabled by the platform define
+ * MIPI_SYST_PCFG_ENABLE_INLINE.
+ * Implementation will then use true functions to save code space.
+ */
+#if !defined(MIPI_SYST_PCFG_ENABLE_INLINE)
+#include "mipi_syst/inline.h"
+#endif
