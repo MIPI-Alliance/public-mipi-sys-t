@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018-2023, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*
  * Contributors:
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ * Przemyslaw Romaniak (Intel Corporation) - SBD implementation
  */
 
  /* Internal C-language API implementation */
@@ -42,7 +43,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mipi_syst/message.h"
 
 #if defined(MIPI_SYST_UNIT_TEST)
-#define ASSERT_CHECK(x) ASSERT_EQ(x, true)
+#include <assert.h>
+#define ASSERT_CHECK(x) assert(x)
 #else
 #define ASSERT_CHECK(x)
 #endif
@@ -62,7 +64,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /**
- * predefined write scatter instructions defined in scatter_op table
+ * predefined write scatter instructions defined in scatter_ops table
  */
 enum syst_scatter_ops {
 #if defined(MIPI_SYST_PCFG_ENABLE_ORIGIN_GUID)
@@ -89,6 +91,13 @@ enum syst_scatter_ops {
 #if defined(MIPI_SYST_PCFG_ENABLE_BUILD_API)
 	SCATTER_OP_VER_ID,
 	SCATTER_OP_VER_TXT,
+#endif
+#if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)
+	SCATTER_OP_SBD_ID_32,
+	SCATTER_OP_SBD_ID_64,
+	SCATTER_OP_SBD_ADDR,
+	SCATTER_OP_SBD_NAME,
+	SCATTER_OP_SBD_BLOB,
 #endif
 	SCATTER_OP_END
 };
@@ -175,6 +184,42 @@ static const struct mipi_syst_scatter_prog scatter_ops[] = {
 	 0}
 	,
 #endif /* defined(MIPI_SYST_PCFG_ENABLE_BUILD_API) */
+#if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)
+
+	{			/* SCATTER_OP_SBD_ID_32 */
+	 MIPI_SYST_SCATTER_OP_32BIT,
+	 MIPI_SYST_EVDSC_MEMBER_OFF(ed_pld.data_sbd.id.sbd_id_32),
+	 1}
+	 ,
+	{			/* SCATTER_OP_SBD_ID_64 */
+	 MIPI_SYST_SCATTER_OP_64BIT,
+	 MIPI_SYST_EVDSC_MEMBER_OFF(ed_pld.data_sbd.id.sbd_id_64),
+	 1}
+	 ,
+	 {			/* SCATTER_OP_SBD_ADDR */
+#ifdef MIPI_SYST_PTR_SIZE_16BIT
+	 MIPI_SYST_SCATTER_OP_16BIT,
+#elif defined(MIPI_SYST_PTR_SIZE_32BIT)
+	 MIPI_SYST_SCATTER_OP_32BIT,
+#elif defined(MIPI_SYST_PTR_SIZE_64BIT)
+	 MIPI_SYST_SCATTER_OP_64BIT,
+#else
+	#error unsupported pointer size for Structured Binary Data (SBD)
+#endif
+	 MIPI_SYST_EVDSC_MEMBER_OFF(ed_pld.data_sbd.address),
+	 1}
+	 ,
+	{			/* SCATTER_OP_SBD_NAME */
+	 MIPI_SYST_SCATTER_OP_BLOB,
+	 MIPI_SYST_EVDSC_MEMBER_OFF(ed_pld.data_sbd.name),
+	 0}
+	 ,
+	{			/* SCATTER_OP_SBD_BLOB */
+	 MIPI_SYST_SCATTER_OP_BLOB,
+	 MIPI_SYST_EVDSC_MEMBER_OFF(ed_pld.data_sbd.blob),
+	 0}
+	 ,
+#endif /* #if defined(MIPI_SYST_PCFG_ENABLE_SBD_API) */
 
 	{ /* SCATTER_OP_END */
 	 MIPI_SYST_SCATTER_OP_END,
@@ -446,6 +491,210 @@ mipi_syst_write_catalog32_message(struct mipi_syst_handle* svh,
 }
 
 #endif /* #if defined(MIPI_SYST_PCFG_ENABLE_CATID32_API) */
+
+#if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)
+
+/**
+ * Write 64bit SBD message
+ *
+ * @param svh  SyS-T handle
+ * @param loc  Pointer to instrumentation location or null
+ * @param severity message severity level (0..7)
+ * @param sbd_id 64bit SBD ID
+ * @param addr optional address of BLOB structure or NULL
+ * @param name optional null-terminated UTF-8 string describing BLOB or NULL
+ * @param len size of provided BLOB
+ * @param blob pointer to BLOB to be captured in SBD message
+ */
+MIPI_SYST_EXPORT void MIPI_SYST_CALLCONV
+mipi_syst_write_sbd64_message(struct mipi_syst_handle* svh,
+			struct mipi_syst_msglocation* loc,
+			enum mipi_syst_severity severity,
+			mipi_syst_u64 sbd_id,
+			mipi_syst_address addr,
+			const char* name,
+			mipi_syst_u32 len,
+			const void *blob)
+{
+	struct mipi_syst_msgdsc desc;
+	struct mipi_syst_scatter_prog prog[MIPI_SYST_SCATTER_PROG_LEN];
+	struct mipi_syst_scatter_prog *prog_ptr = prog;
+
+	if ((struct mipi_syst_handle*)0 == svh)
+		return;
+
+	/* assign tag */
+	desc.ed_tag = svh->systh_tag;
+	desc.ed_tag.et_type = MIPI_SYST_TYPE_SBD;
+	desc.ed_tag.et_severity = severity;
+	desc.ed_tag.et_subtype = MIPI_SYST_SBD_ID_64BIT;
+	mipi_syst_u32 total_len = sizeof(sbd_id);
+	mipi_syst_u32 name_len = 0;
+
+	if (NULL != name)
+	{
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_WITH_NAME;
+		while(name[name_len] != 0)
+		{
+			++name_len; // calculate name length
+		}
+
+		//count null terminator too
+		++name_len;
+
+		total_len += name_len;
+	}
+	if (0 != addr)
+	{
+#ifdef MIPI_SYST_PTR_SIZE_16BIT
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_16BIT_ADDRESS;
+#elif defined(MIPI_SYST_PTR_SIZE_32BIT)
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_32BIT_ADDRESS;
+#elif defined(MIPI_SYST_PTR_SIZE_64BIT)
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_64BIT_ADDRESS;
+#endif
+		total_len += sizeof(addr);
+	}
+
+	total_len += len; // add BLOB length
+
+	insert_optional_msg_components(svh, loc, total_len, &desc, &prog_ptr);
+
+	// insert SBD ID
+	desc.ed_pld.data_sbd.id.sbd_id_64 = sbd_id;
+	*prog_ptr++ = scatter_ops[SCATTER_OP_SBD_ID_64];
+
+	// add optional address (if any)
+	if (0 != addr)
+	{
+		desc.ed_pld.data_sbd.address = addr;
+		*prog_ptr++ = scatter_ops[SCATTER_OP_SBD_ADDR];
+	}
+
+	// add optional name (if any)
+	if (NULL != name)
+	{
+		desc.ed_pld.data_sbd.name = name;
+		*prog_ptr = scatter_ops[SCATTER_OP_SBD_NAME];
+		prog_ptr->sso_length = name_len;
+		++prog_ptr;
+	}
+
+	// add BLOB bytes
+	desc.ed_pld.data_sbd.blob = blob;
+	*prog_ptr = scatter_ops[SCATTER_OP_SBD_BLOB];
+	prog_ptr->sso_length = len;
+	++prog_ptr;
+
+	*prog_ptr = scatter_ops[SCATTER_OP_END];
+
+	ASSERT_CHECK(prog_ptr < &prog[MIPI_SYST_SCATTER_PROG_LEN]);
+
+	/* call IO routine to dump out the message */
+	MIPI_SYST_SCATTER_WRITE(svh, prog, &desc);
+}
+
+/**
+ * Write 32bit SBD message
+ *
+ * @param svh  SyS-T handle
+ * @param loc  Pointer to instrumentation location or null
+ * @param severity message severity level (0..7)
+ * @param sbd_id 32bit SBD ID
+ * @param addr optional address of BLOB structure or NULL
+ * @param name optional null-terminated UTF-8 string describing BLOB or NULL
+ * @param len size of provided BLOB
+ * @param blob pointer to BLOB to be captured in SBD message
+ */
+MIPI_SYST_EXPORT void MIPI_SYST_CALLCONV
+mipi_syst_write_sbd32_message(struct mipi_syst_handle* svh,
+			struct mipi_syst_msglocation* loc,
+			enum mipi_syst_severity severity,
+			mipi_syst_u32 sbd_id,
+			mipi_syst_address addr,
+			const char *name,
+			mipi_syst_u32 len,
+			const void *blob)
+{
+	struct mipi_syst_msgdsc desc;
+	struct mipi_syst_scatter_prog prog[MIPI_SYST_SCATTER_PROG_LEN];
+	struct mipi_syst_scatter_prog *prog_ptr = prog;
+
+	if ((struct mipi_syst_handle*)0 == svh)
+		return;
+
+	/* assign tag */
+	desc.ed_tag = svh->systh_tag;
+	desc.ed_tag.et_type = MIPI_SYST_TYPE_SBD;
+	desc.ed_tag.et_severity = severity;
+	desc.ed_tag.et_subtype = MIPI_SYST_SBD_ID_32BIT;
+	mipi_syst_u32 total_len = sizeof(sbd_id);
+	mipi_syst_u32 name_len = 0;
+
+	if (NULL != name)
+	{
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_WITH_NAME;
+		while(name[name_len] != 0)
+		{
+			++name_len; // calculate name length
+		}
+
+		//count null terminator too
+		++name_len;
+
+		total_len += name_len;
+	}
+	if (0 != addr)
+	{
+#ifdef MIPI_SYST_PTR_SIZE_16BIT
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_16BIT_ADDRESS;
+#elif defined(MIPI_SYST_PTR_SIZE_32BIT)
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_32BIT_ADDRESS;
+#elif defined(MIPI_SYST_PTR_SIZE_64BIT)
+		desc.ed_tag.et_subtype |= MIPI_SYST_SBD_64BIT_ADDRESS;
+#endif
+		total_len += sizeof(addr);
+	}
+
+	total_len += len; // add BLOB length
+
+	insert_optional_msg_components(svh, loc, total_len, &desc, &prog_ptr);
+
+	// insert SBD ID
+	desc.ed_pld.data_sbd.id.sbd_id_32 = sbd_id;
+	*prog_ptr++ = scatter_ops[SCATTER_OP_SBD_ID_32];
+
+	// add optional address (if any)
+	if (0 != addr)
+	{
+		desc.ed_pld.data_sbd.address = addr;
+		*prog_ptr++ = scatter_ops[SCATTER_OP_SBD_ADDR];
+	}
+
+	// add optional name (if any)
+	if (NULL != name)
+	{
+		desc.ed_pld.data_sbd.name = name;
+		*prog_ptr = scatter_ops[SCATTER_OP_SBD_NAME];
+		prog_ptr->sso_length = name_len;
+		++prog_ptr;
+	}
+
+	// add BLOB bytes
+	desc.ed_pld.data_sbd.blob = blob;
+	*prog_ptr = scatter_ops[SCATTER_OP_SBD_BLOB];
+	prog_ptr->sso_length = len;
+	++prog_ptr;
+
+	*prog_ptr = scatter_ops[SCATTER_OP_END];
+
+	ASSERT_CHECK(prog_ptr < &prog[MIPI_SYST_SCATTER_PROG_LEN]);
+
+	/* call IO routine to dump out the message */
+	MIPI_SYST_SCATTER_WRITE(svh, prog, &desc);
+}
+
+#endif /* #if defined(MIPI_SYST_PCFG_ENABLE_SBD_API) */
 
 #if defined(MIPI_SYST_PCFG_ENABLE_WRITE_API)
 

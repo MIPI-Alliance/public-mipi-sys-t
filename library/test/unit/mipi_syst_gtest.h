@@ -39,8 +39,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <gtest/gtest.h>
 #include <string>
 
-#define MIPI_SYST_UNIT_TEST
-
 #include "mipi_syst.h"
 
 /* hard code compiler dependend standard defines to fixed values for

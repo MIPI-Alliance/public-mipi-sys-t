@@ -110,6 +110,20 @@ add_library(mipi_syst_static
          ${mipi_syst_Platform_src}
 )
 
+add_library(mipi_syst_ut
+         STATIC
+         ${mipi_syst_Platform_includes}
+         ${mipi_syst_Includes}
+         ${mipi_syst_Sources}
+         ${mipi_syst_Platform_src}
+)
+
+set_target_properties(mipi_syst_ut  PROPERTIES
+    VERSION ${SYST_CFG_VERSION_MAJOR}.${SYST_CFG_VERSION_MINOR}.${SYST_CFG_VERSION_PATCH}
+    COMPILE_FLAGS "-DMIPI_SYST_STATIC -DMIPI_SYST_UNIT_TEST"
+    FOLDER "Instrumentation Library"
+)
+
 set_target_properties(mipi_syst  PROPERTIES
     VERSION ${SYST_CFG_VERSION_MAJOR}.${SYST_CFG_VERSION_MINOR}.${SYST_CFG_VERSION_PATCH}
     COMPILE_FLAGS "-DMIPI_SYST_EXPORTS"

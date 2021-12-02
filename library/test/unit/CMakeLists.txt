@@ -28,14 +28,15 @@ add_executable(syst_unittest
     mipi_syst_crc32_test.cpp
     mipi_syst_catid32_test.cpp
     mipi_syst_catid64_test.cpp
+    mipi_syst_sbd_test.cpp
     mipi_syst_printf_test.cpp
     mipi_syst_raw_test.cpp
     mipi_syst_string_test.cpp
     mipi_syst_build_test.cpp
 )
 
-target_link_libraries(syst_unittest gtest mipi_syst_static)
-set_target_properties(syst_unittest  PROPERTIES COMPILE_FLAGS "-DMIPI_SYST_EXPORTS")
+target_link_libraries(syst_unittest gtest mipi_syst_ut)
+set_target_properties(syst_unittest  PROPERTIES COMPILE_FLAGS "-DMIPI_SYST_EXPORTS -DMIPI_SYST_UNIT_TEST")
 
 foreach (target gtest gtest_main syst_unittest)
     set_property(TARGET ${target} PROPERTY FOLDER "Unittests")
