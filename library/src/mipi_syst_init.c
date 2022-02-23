@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
  */
 
+#include <stdlib.h>
 #include "mipi_syst.h"
 #include "mipi_syst/message.h"
 
@@ -43,11 +44,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * SyS-T global state
  */
 static struct mipi_syst_header syst_hdr = { 0 };
-
-static union mipi_syst_null_init {
-	struct mipi_syst_handle handle;
-	struct mipi_syst_header header;
-} zero = { {0} }; /* for initializations */
 
 #if !defined(MIPI_SYST_PCFG_ENABLE_DEFAULT_SCATTER_WRITE)
 /**
@@ -78,6 +74,7 @@ mipi_syst_init(
 	mipi_syst_inithook_t pfinit,
 	const void *init_param)
 {
+	struct mipi_syst_header zero_header = {0};
 	if (0 == header) {
 		/* No user supplied global state storage,
 		 * use internal default state
@@ -85,7 +82,7 @@ mipi_syst_init(
 		header = &syst_hdr;
 	}
 
-	*header = zero.header;
+	*header = zero_header;
 	header->systh_version = MIPI_SYST_VERSION_CODE;
 
 #if MIPI_SYST_CONFORMANCE_LEVEL > 10
@@ -143,6 +140,7 @@ mipi_syst_init_handle(
 	const struct mipi_syst_origin *origin,
 	mipi_syst_u32 fromHeap)
 {
+	struct mipi_syst_handle zero_handle = {0};
 	if ((struct mipi_syst_handle*) 0 == svh)
 		return svh;
 
@@ -154,7 +152,7 @@ mipi_syst_init_handle(
 		header = &syst_hdr;
 	}
 
-	*svh = zero.handle;
+	*svh = zero_handle;
 
 	svh->systh_header = header;
 	svh->systh_flags.shf_alloc = fromHeap ? 1 : 0;
@@ -183,6 +181,7 @@ mipi_syst_init_handle(
  */
 MIPI_SYST_EXPORT void MIPI_SYST_CALLCONV mipi_syst_delete_handle(struct mipi_syst_handle* svh)
 {
+	struct mipi_syst_handle zero_handle = {0};
 	if ((struct mipi_syst_handle*) 0 != svh) {
 #if defined(MIPI_SYST_PCFG_ENABLE_PLATFORM_HANDLE_DATA)
 		/* call platform handle release hook if defined
@@ -198,7 +197,7 @@ MIPI_SYST_EXPORT void MIPI_SYST_CALLCONV mipi_syst_delete_handle(struct mipi_sys
 		} else
 #endif
 		{
-			*svh = zero.handle;
+			*svh = zero_handle;
 		}
 	}
 }
