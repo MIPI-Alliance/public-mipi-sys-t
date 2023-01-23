@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018-2023, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Contributors:
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
  */
+
 #include "mipi_syst.h"
 #include "mipi_syst/message.h"
 #include "mipi_syst/crc32.h"
@@ -71,7 +72,7 @@ void mipi_syst_scatter_write(struct mipi_syst_handle* systh,
 #if defined(MIPI_SYST_PCFG_ENABLE_CHECKSUM)
 #define IFDO(a, b)  { if (a) do { b; } while (0); }
 
-	 mipi_syst_u32 crc;
+	mipi_syst_u32 crc;
 	int use_crc;
 
 	use_crc = systh->systh_tag.et_chksum;

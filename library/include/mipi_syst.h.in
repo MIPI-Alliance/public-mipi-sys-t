@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018-2023, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*
  * Contributors:
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ * Przemyslaw Romaniak (Intel Corporation) - SBD implementation
  */
 
 #ifndef MIPI_SYST_H_INCLUDED
 #define MIPI_SYST_H_INCLUDED
+
+#include <stdint.h>
 
 /* SyS-T API version information
  */
@@ -96,6 +99,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mipi_syst/compiler.h"
 #endif
 
+#ifndef MIPI_SYST_UNIT_TEST
+	typedef void* mipi_syst_address;
+	#if UINTPTR_MAX == UINT16_MAX
+		#define MIPI_SYST_PTR_SIZE_16BIT
+	#elif UINTPTR_MAX == UINT32_MAX
+		#define MIPI_SYST_PTR_SIZE_32BIT
+	#elif UINTPTR_MAX == UINT64_MAX
+		#define MIPI_SYST_PTR_SIZE_64BIT
+	#endif
+#else
+	typedef mipi_syst_u32 mipi_syst_address;
+	#define MIPI_SYST_PTR_SIZE_32BIT
+#endif
+
 /* String hash macros for compile time computation of catalog ID's.
  * Notes:
  *    These macros will only be used with optimized builds, otherwise
@@ -131,9 +148,9 @@ enum mipi_syst_msgtype {
 	MIPI_SYST_TYPE_STRING = 2,         /**< text message output       */
 	MIPI_SYST_TYPE_CATALOG = 3,        /**< catalog message output    */
 	MIPI_SYST_TYPE_RAW = 6,            /**< raw binary data           */
-	MIPI_SYST_TYPE_SHORT64 = 7,        /**<  value only message       */
+	MIPI_SYST_TYPE_SHORT64 = 7,        /**< value only message        */
 	MIPI_SYST_TYPE_CLOCK = 8,          /**< clock sync message        */
-
+	MIPI_SYST_TYPE_SBD = 9,            /**< Structured Binary Data    */
 	MIPI_SYST_TYPE_MAX
 };
 
@@ -174,6 +191,24 @@ enum mipi_syst_subtype_build {
 	MIPI_SYST_BUILD_ID_COMPACT64  = 1, /**< compact64  build id       */
 	MIPI_SYST_BUILD_ID_LONG       = 2, /**< normal build  message     */
 	MIPI_SYST_BUILD_MAX
+};
+
+/** MIPI_SYST_TYPE_SBD Sub-Type is a bitmask
+ * bit 0 - SBD-ID size, bit 1 - with name, bit 2 - with BLOB address
+ * use binary OR ( | ) to join mipi_syst_subtype_sbd values to get required subtype
+ * for example, MIPI_SYST_SBD_ID_32BIT | MIPI_SYST_SBD_WITH_NAME | MIPI_SYST_SBD_32BIT_ADDRESS
+ */
+
+enum mipi_syst_subtype_sbd
+{
+	MIPI_SYST_SBD_ID_32BIT = (0 << 0),        /**< SBD with 32bit SBD-ID                  */
+	MIPI_SYST_SBD_ID_64BIT = (1 << 0),        /**< SBD with 64bit SBD-ID                  */
+	MIPI_SYST_SBD_WITHOUT_NAME = (0 << 1),    /**< SBD without optional name              */
+	MIPI_SYST_SBD_WITH_NAME = (1 << 1),       /**< SBD with optional name                 */
+	MIPI_SYST_SBD_WITHOUT_ADDRESS = (0 << 2), /**< SBD without optional BLOB address      */
+	MIPI_SYST_SBD_16BIT_ADDRESS = (1 << 2),   /**< SBD with optional 16-bit BLOB address  */
+	MIPI_SYST_SBD_32BIT_ADDRESS = (2 << 2),   /**< SBD with optional 32-bit BLOB address  */
+	MIPI_SYST_SBD_64BIT_ADDRESS = (3 << 2)    /**< SBD with optional 64-bit BLOB address  */
 };
 
 struct mipi_syst_header;
@@ -495,6 +530,11 @@ typedef void (*mipi_syst_msg_write_t)(
  * Enable the Catalog API for 64-Bit Catalog IDs.
  */
 #define MIPI_SYST_PCFG_ENABLE_CATID64_API
+
+/**
+ * Enable the Structured Binary Data (SBD) API.
+ */
+#define MIPI_SYST_PCFG_ENABLE_SBD_API
 
 /**
  * Enable plain UTF-8 string output APIs.

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018-2023, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*
  * Contributors:
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ * Przemyslaw Romaniak (Intel Corporation) - SBD implementation
  */
 
 /* SyS-T Instrumentation API defintions
@@ -2311,6 +2312,105 @@ mipi_syst_write_printf_catalog32(struct mipi_syst_handle* svh,
 
 #endif /* defined(MIPI_SYST_PCFG_ENABLE_PRINTF_API) */
 
+#if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)
+
+/**
+ * Pass null to SBD API to skip optional blob address.
+ */
+#define MIPI_SYST_SBD_NO_BLOB_ADDRESS (mipi_syst_address)0
+
+ /**
+ * Create a Structured Binary Data (SBD) Message
+ * of type MIPI_SYST_TYPE_SBD with 32-bit SBD-ID.
+ *
+ * @param h mipi_syst_handle * SyS-T handle
+ * @param sev mipi_syst_severity severity level (0..7)
+ * @param id  mipi_syst_u32 32-bit SBD-ID value
+ * @param addr mipi_syst_u64 optional address for BLOB or MIPI_SYST_SBD_NO_BLOB_ADDRESS
+ * @param name const mipi_syst_u8 * optional name for BLOB, UTF-8 string or NULL
+ * @param len mipi_syst_u32 size of BLOB in bytes
+ * @param blob const void * pointer to BLOB
+ *
+ * Example:
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
+ *
+ * struct MyVariable {
+ *    int member1;
+ *    int member2;
+ * };
+ *
+ * MyVariable myVariable = {1, 2};
+
+ * MIPI_SYST_SBD32(handle,
+ *      MIPI_SYST_SEVERITY_INFO,
+ *	    0x12345678,
+ *	    (mipi_syst_address)&myVariable,
+ *		"myVariable",
+ *		sizeof(myVariable),
+ *		&myVariable);
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+#define MIPI_SYST_SBD32(h, sev, id, addr, name, len, blob)\
+	(mipi_syst_write_sbd32_message(h, MIPI_SYST_NOLOCATION, sev, id, addr, name, len, blob))
+
+ /**
+ * Create a Structured Binary Data (SBD) Message
+ * of type MIPI_SYST_TYPE_SBD with 64-bit SBD-ID.
+ *
+ * @param h mipi_syst_handle * SyS-T handle
+ * @param sev mipi_syst_severity severity level (0..7)
+ * @param id  mipi_syst_u64 64-bit SBD-ID value
+ * @param addr mipi_syst_u64 optional address for BLOB or MIPI_SYST_SBD_NO_BLOB_ADDRESS
+ * @param name const mipi_syst_u8 * optional name for BLOB, UTF-8 string or NULL
+ * @param len mipi_syst_u32 size of BLOB in bytes
+ * @param blob const void * pointer to BLOB
+ *
+ * Example:
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
+ *
+ * struct MyVariable {
+ *    int member1;
+ *    int member2;
+ * };
+ *
+ * MyVariable myVariable = {1, 2};
+
+ * MIPI_SYST_SBD64(handle,
+ *      MIPI_SYST_SEVERITY_INFO,
+ *	    0x1234567812345678,
+ *	    (mipi_syst_address)&myVariable,
+ *		"myVariable",
+ *		sizeof(myVariable),
+ *		&myVariable);
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+#define MIPI_SYST_SBD64(h, sev, id, addr, name, len, blob)\
+	(mipi_syst_write_sbd64_message(h, MIPI_SYST_NOLOCATION, sev, id, addr, name, len, blob))
+
+MIPI_SYST_EXPORT void MIPI_SYST_CALLCONV
+mipi_syst_write_sbd32_message(struct mipi_syst_handle* svh,
+			struct mipi_syst_msglocation* loc,
+			enum mipi_syst_severity severity,
+			mipi_syst_u32 sbd_id,
+			mipi_syst_address addr,
+			const mipi_syst_s8 *name,
+			mipi_syst_u32 len,
+			const void *blob);
+
+MIPI_SYST_EXPORT void MIPI_SYST_CALLCONV
+mipi_syst_write_sbd64_message(struct mipi_syst_handle* svh,
+			struct mipi_syst_msglocation* loc,
+			enum mipi_syst_severity severity,
+			mipi_syst_u64 sbd_id,
+			mipi_syst_address addr,
+			const char* name,
+			mipi_syst_u32 len,
+			const void *blob);
+
+#endif /* #if defined(MIPI_SYST_PCFG_ENABLE_SBD_API) */
+
 /** @copydoc MIPI_SYST_CATALOG64_0 */
 #define MIPI_SYST_CATALOG32_0(svh, sev, id)\
 	(mipi_syst_make_param0(svh),\
@@ -2843,6 +2943,13 @@ mipi_syst_write_catalog32_message(struct mipi_syst_handle* svh,
 #endif
 #ifndef MIPI_SYST_CATPRINTF32_LOCADDR
 #define MIPI_SYST_CATPRINTF32_LOCADDR(...)
+#endif
+
+#ifndef MIPI_SYST_SBD32
+#define MIPI_SYST_SBD32(...)
+#endif
+#ifndef MIPI_SYST_SBD64
+#define MIPI_SYST_SBD64(...)
 #endif
 
 /* Map CATPRINTF calls to their corresponding catalog APIs

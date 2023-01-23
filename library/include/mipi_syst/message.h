@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018-2023, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /*
  * Contributors:
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
+ * Przemyslaw Romaniak (Intel Corporation) - SBD implementation
  */
 
 /* Internal message storage buffering */
@@ -51,7 +52,17 @@ extern "C" {
 union mipi_syst_catid {
 	mipi_syst_u32 sci_32;
 	mipi_syst_u64 sci_64;
-} ;
+};
+
+#if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)
+/**
+ * SBD union for 32bit/64bit ID
+ */
+union mipi_syst_sbd_id {
+	mipi_syst_u32 sbd_id_32;
+	mipi_syst_u64 sbd_id_64;
+};
+#endif
 
 /**
  * SyS-T message descriptor
@@ -90,6 +101,15 @@ union mipi_syst_catid {
 			union mipi_syst_catid id;
 			mipi_syst_u32 *param;
 		} data_catid;
+
+#if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)
+		struct {
+			union mipi_syst_sbd_id id;
+			mipi_syst_address address;
+			const char *name;
+			const void *blob;
+		} data_sbd;
+#endif
 
 #if defined(MIPI_SYST_PCFG_ENABLE_TIMESTAMP)
 		mipi_syst_u64 data_clock[2];
