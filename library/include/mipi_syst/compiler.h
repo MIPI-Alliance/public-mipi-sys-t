@@ -45,6 +45,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern "C" {
 #endif
 
+#if defined(__clang__)
+#undef _WIN32
+#endif
+
 #if defined(_WIN32)		/* MSVC Compiler section */
 
 /* basic integer types

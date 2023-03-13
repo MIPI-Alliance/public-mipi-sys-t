@@ -36,7 +36,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
  */
 
-#include <stdlib.h>
 #include "mipi_syst.h"
 #include "mipi_syst/message.h"
 
