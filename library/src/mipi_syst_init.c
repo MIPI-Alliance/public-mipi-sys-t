@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Norbert Schulz (Intel Corporation) - Initial API and implementation
  */
 
-#include <stdlib.h>
 #include "mipi_syst.h"
 #include "mipi_syst/message.h"
 

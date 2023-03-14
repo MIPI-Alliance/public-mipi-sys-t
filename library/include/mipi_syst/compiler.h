@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2018, MIPI Alliance, Inc. 
+Copyright (c) 2018, MIPI Alliance, Inc.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(__cplusplus)
 extern "C" {
+#endif
+
+#if defined(__clang__)
+#undef _WIN32
 #endif
 
 #if defined(_WIN32)		/* MSVC Compiler section */
