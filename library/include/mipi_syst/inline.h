@@ -117,7 +117,7 @@ MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param0(struct mipi_syst_
  * Setup handle for 1 parameter passed to catid message.
  */
 MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param1(struct mipi_syst_handle* h,
-						 mipi_syst_u32 p1)
+						 mipi_syst_param p1)
 {
 	if (h) {
 		h->systh_param_count = 1;
@@ -129,8 +129,8 @@ MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param1(struct mipi_syst_
  * Setup handle for 2 parameters passed to catid message.
  */
 MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param2(struct mipi_syst_handle* h,
-						 mipi_syst_u32 p1,
-						 mipi_syst_u32 p2)
+						 mipi_syst_param p1,
+						 mipi_syst_param p2)
 {
 	if (h) {
 		h->systh_param_count = 2;
@@ -143,9 +143,9 @@ MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param2(struct mipi_syst_
  * Setup handle for 3 parameters passed to catid message.
  */
 MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param3(struct mipi_syst_handle* h,
-						 mipi_syst_u32 p1,
-						 mipi_syst_u32 p2,
-						 mipi_syst_u32 p3)
+						 mipi_syst_param p1,
+						 mipi_syst_param p2,
+						 mipi_syst_param p3)
 {
 	if (h) {
 		h->systh_param_count = 3;
@@ -159,10 +159,10 @@ MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param3(struct mipi_syst_
  * Setup handle for 4 parameters passed to catid message.
  */
 MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param4(struct mipi_syst_handle* h,
-						 mipi_syst_u32 p1,
-						 mipi_syst_u32 p2,
-						 mipi_syst_u32 p3,
-						 mipi_syst_u32 p4)
+						 mipi_syst_param p1,
+						 mipi_syst_param p2,
+						 mipi_syst_param p3,
+						 mipi_syst_param p4)
 {
 	if (h) {
 		h->systh_param_count = 4;
@@ -177,11 +177,11 @@ MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param4(struct mipi_syst_
  * Setup handle for 5 parameters passed to catid message.
  */
 MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param5(struct mipi_syst_handle* h,
-						 mipi_syst_u32 p1,
-						 mipi_syst_u32 p2,
-						 mipi_syst_u32 p3,
-						 mipi_syst_u32 p4,
-						 mipi_syst_u32 p5)
+						 mipi_syst_param p1,
+						 mipi_syst_param p2,
+						 mipi_syst_param p3,
+						 mipi_syst_param p4,
+						 mipi_syst_param p5)
 {
 	if (h) {
 		h->systh_param_count = 5;
@@ -197,12 +197,12 @@ MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param5(struct mipi_syst_
  * Setup handle for 6 parameters passed to catid message.
  */
 MIPI_SYST_INLINE void MIPI_SYST_CALLCONV mipi_syst_make_param6(struct mipi_syst_handle* h,
-						 mipi_syst_u32 p1,
-						 mipi_syst_u32 p2,
-						 mipi_syst_u32 p3,
-						 mipi_syst_u32 p4,
-						 mipi_syst_u32 p5,
-						 mipi_syst_u32 p6)
+						 mipi_syst_param p1,
+						 mipi_syst_param p2,
+						 mipi_syst_param p3,
+						 mipi_syst_param p4,
+						 mipi_syst_param p5,
+						 mipi_syst_param p6)
 {
 	if (h) {
 		h->systh_param_count = 6;

@@ -466,6 +466,13 @@ typedef void (*mipi_syst_msg_write_t)(
 #if defined(_WIN64) || defined(__x86_64__) || defined (__LP64__)
 #define MIPI_SYST_PCFG_ENABLE_64BIT_ADDR
 #endif
+
+#if defined(MIPI_SYST_PCFG_ENABLE_64BIT_ADDR)
+typedef mipi_syst_u64 mipi_syst_param;
+#else
+typedef mipi_syst_u32 mipi_syst_param;
+#endif
+
 /**
  * Enable atomic 64-bit write operations
  *
@@ -804,7 +811,7 @@ struct mipi_syst_handle_flags {
 #endif
 
 	mipi_syst_u32 systh_param_count;          /**< number of parameters     */
-	mipi_syst_u32 systh_param[6];             /**< catalog msg parameters   */
+	mipi_syst_param systh_param[6];           /**< catalog msg parameters   */
 
 #if defined(MIPI_SYST_PCFG_ENABLE_PLATFORM_HANDLE_DATA)
 	struct mipi_syst_platform_handle systh_platform;

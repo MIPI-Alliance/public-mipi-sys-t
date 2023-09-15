@@ -1570,7 +1570,8 @@ enum mipi_syst_catalog_parameter_types {
 /**
  * Send catalog message with 0-6 parameters.<BR>
  * This family of Macros is used to send 32 or 64-bit wide catalog
- * message IDs with up to six 32-bit wide parameters into the trace stream.
+ * message IDs with up to six 32/64-bit wide parameters into the trace stream.
+ * Size of parameters are chosen depending on MIPI_SYST_PCFG_ENABLE_64BIT_ADDR.
  * The macro names are encoded in the following way:
  * MIPI_SYST_CATALOG{ID-WIDTH}_{PARAMETER-COUNT}
  *
@@ -1581,7 +1582,7 @@ enum mipi_syst_catalog_parameter_types {
  * @param sev mipi_syst_severity severity level (0..7)
  * @param id catalog ID
  *
- * Up to 6 32-Bit numeric parameter follow the catalog ID.
+ * Up to 6 32/64-bit numeric parameter follow the catalog ID.
  *
  * Example:
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.c}
