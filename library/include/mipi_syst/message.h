@@ -99,7 +99,7 @@ union mipi_syst_sbd_id {
 
 		struct {
 			union mipi_syst_catid id;
-			mipi_syst_u32 *param;
+			mipi_syst_param *param;
 		} data_catid;
 
 #if defined(MIPI_SYST_PCFG_ENABLE_SBD_API)

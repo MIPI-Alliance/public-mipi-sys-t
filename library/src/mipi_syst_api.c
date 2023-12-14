@@ -267,7 +267,7 @@ insert_optional_msg_components(struct mipi_syst_handle* svh,
 #endif
 
 #if defined(MIPI_SYST_PCFG_LENGTH_FIELD)
-	/* pay load length */
+	/* payload length */
 	if(0 != desc->ed_tag.et_length) {
 		desc->ed_len = len;
 		*prog++ = scatter_ops[SCATTER_OP_LENGTH];
@@ -380,7 +380,7 @@ mipi_syst_write_catalog64_message(struct mipi_syst_handle* svh,
 #endif
 
 	paramlen = (mipi_syst_u16)
-		(svh->systh_param_count *  sizeof(mipi_syst_u32));
+		(svh->systh_param_count *  sizeof(mipi_syst_param));
 
 	insert_optional_msg_components(
 			svh, loc,
@@ -394,7 +394,7 @@ mipi_syst_write_catalog64_message(struct mipi_syst_handle* svh,
 	/* parameters (if any) */
 
 	if (0 != paramlen) {
-		mipi_syst_u32 *param;
+		mipi_syst_param *param;
 		param = svh->systh_param;
 		desc.ed_pld.data_catid.param = param;
 		*prog_ptr = scatter_ops[SCATTER_OP_CATID_ARGS];
@@ -402,9 +402,13 @@ mipi_syst_write_catalog64_message(struct mipi_syst_handle* svh,
 		++prog_ptr;
 #if defined(MIPI_SYST_BIG_ENDIAN)
 		while(paramlen) {
+#if defined(MIPI_SYST_PCFG_ENABLE_64BIT_ADDR)
+			*param = MIPI_SYST_HTOLE64(*param);
+#else
 			*param = MIPI_SYST_HTOLE32(*param);
+#endif
 			param++;
-			paramlen-=sizeof(mipi_syst_u32);
+			paramlen-=sizeof(mipi_syst_param);
 		}
 #endif
 	}
@@ -453,7 +457,7 @@ mipi_syst_write_catalog32_message(struct mipi_syst_handle* svh,
 #endif
 
 	paramlen = (mipi_syst_u16)
-		(svh->systh_param_count *  sizeof(mipi_syst_u32));
+		(svh->systh_param_count *  sizeof(mipi_syst_param));
 
 	insert_optional_msg_components(
 			svh, loc,
@@ -467,7 +471,7 @@ mipi_syst_write_catalog32_message(struct mipi_syst_handle* svh,
 	/* parameters (if any) */
 
 	if (0 != paramlen) {
-		mipi_syst_u32 * param;
+		mipi_syst_param * param;
 		param = svh->systh_param;
 		desc.ed_pld.data_catid.param = param;
 		*prog_ptr = scatter_ops[SCATTER_OP_CATID_ARGS];
@@ -475,9 +479,13 @@ mipi_syst_write_catalog32_message(struct mipi_syst_handle* svh,
 		++prog_ptr;
 #if defined(MIPI_SYST_BIG_ENDIAN)
 		while(paramlen) {
+#if defined(MIPI_SYST_PCFG_ENABLE_64BIT_ADDR)
+			*param = MIPI_SYST_HTOLE64(*param);
+#else
 			*param = MIPI_SYST_HTOLE32(*param);
+#endif
 			param++;
-			paramlen-=sizeof(mipi_syst_u32);
+			paramlen-=sizeof(mipi_syst_param);
 		}
 #endif
 	}
