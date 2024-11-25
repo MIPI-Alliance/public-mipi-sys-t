@@ -1,0 +1,44 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "authors": [
+      {
+        "name": "@VCS_SBOM_AUTHORS@"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:github/MIPI-Alliance/public-mipi-sys-t@@VCS_TAG@",
+      "cpe": "cpe:2.3:a:mipi:public-mipi-sys-t:@VCS_TAG@:*:*:*:*:*:*:*",
+      "name": "MIPI SyS-T",
+      "version": "@VCS_VERSION@",
+      "description": "MIPI Alliance Specification for System Software-Trace defines a platform-independent, low bandwidth trace data protocol and software API",
+      "supplier": {
+        "name": "MIPI Alliance developers"
+      },
+      "authors": [
+        {
+          "name": "@VCS_AUTHORS@",
+          "url": "https://github.com/MIPI-Alliance/public-mipi-sys-t/blob/main/CODEOWNERS"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/MIPI-Alliance/public-mipi-sys-t"
+        }
+      ]
+    }
+  ]
+}
