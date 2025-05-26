@@ -43,7 +43,7 @@ The  MIPI specification for SyS-T is available from the
 ## Supported Platforms ##
 
    * Windows
-   * Mac OS X
+   * macOS
    * Linux
 
 ## Requirements ##
